@@ -18,10 +18,10 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Build with Maven
+      - name: Build Spring Boot App
         run: mvn clean package -DskipTests
 
-      - name: Debug JAR build
+      - name: List built files
         run: ls -la target
 
       - name: Upload JAR to EC2
@@ -32,15 +32,21 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           port: 22
           source: "target/*.jar"
-          target: "/home/ubuntu/myapp.jar"
+          target: "/home/ubuntu/"   # ✅ Upload to a directory, NOT to /myapp.jar
 
-      - name: Restart Spring Boot
+      - name: SSH and rename + restart Spring Boot
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
+          port: 22
           script: |
-            echo "🔁 Restarting Spring Boot via systemd..."
+            echo "🔁 Renaming latest JAR to myapp.jar"
+            JAR_FILE=$(ls /home/ubuntu/*.jar | grep -v myapp.jar | head -n 1)
+            mv "$JAR_FILE" /home/ubuntu/myapp.jar
+
+            echo "🚀 Restarting Spring Boot with systemd"
             sudo systemctl restart myapp
-            echo "✅ Restarted"
+
+            echo "✅ Spring Boot restarted and running!"
