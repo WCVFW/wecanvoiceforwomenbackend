@@ -27,7 +27,7 @@ jobs:
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ubuntu
-        key: ${{ secrets.EC2_SSH_KEY }}
+        key: ${{ secrets.EC2_KEY }}
         source: target/womens-foundation-backend-0.0.1-SNAPSHOT.jar
         target: /home/ubuntu/wecanvoiceforwomenbackend/myapp.jar   # 👈 rename to myapp.jar (consistently used)
 
@@ -36,7 +36,7 @@ jobs:
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ubuntu
-        key: ${{ secrets.EC2_SSH_KEY }}
+        key: ${{ secrets.EC2_KEY }}
         script: |
           echo "🔁 Killing old Spring Boot process if running"
           pkill -f 'myapp.jar' || echo "No running instance found"
