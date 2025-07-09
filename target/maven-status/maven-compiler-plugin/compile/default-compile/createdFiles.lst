@@ -1,0 +1,7 @@
+com\example\demo\DemoApplication.class
+com\womensfoundation\service\EmailService.class
+com\womensfoundation\controller\ContactFormController.class
+com\womensfoundation\WomensFoundationApplication.class
+com\womensfoundation\service\ContactFormService.class
+com\womensfoundation\repository\ContactFormRepository.class
+com\womensfoundation\model\ContactForm.class

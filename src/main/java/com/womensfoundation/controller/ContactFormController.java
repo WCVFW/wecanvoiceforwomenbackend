@@ -1,0 +1,71 @@
+package com.womensfoundation.controller;
+
+import com.womensfoundation.model.ContactForm;
+import com.womensfoundation.service.ContactFormService;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.*;
+
+@RestController
+@RequestMapping("/api/contact")
+@CrossOrigin(origins = {"http://16.171.19.4", "https://wecanvoiceforwomen.org"})
+public class ContactFormController {
+
+    @Autowired
+    private ContactFormService contactFormService;
+
+    @PostMapping
+    public ResponseEntity<Map<String, Object>> submitContactForm(@Valid @RequestBody ContactForm contactForm) {
+        ContactForm saved = contactFormService.saveContactForm(contactForm);
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", "Contact form submitted successfully");
+        response.put("id", saved.getId());
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<ContactForm>> getAllContactForms() {
+        return ResponseEntity.ok(contactFormService.getAllContactForms());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ContactForm> getContactFormById(@PathVariable Long id) {
+        return contactFormService.getContactFormById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/status/{status}")
+    public ResponseEntity<List<ContactForm>> getContactFormsByStatus(@PathVariable String status) {
+        return ResponseEntity.ok(contactFormService.getContactFormsByStatus(status));
+    }
+
+    @PutMapping("/{id}/status")
+    public ResponseEntity<ContactForm> updateStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        String status = body.get("status");
+        return ResponseEntity.ok(contactFormService.updateContactFormStatus(id, status));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Map<String, Object>> deleteForm(@PathVariable Long id) {
+        contactFormService.deleteContactForm(id);
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", "Deleted successfully");
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/stats")
+    public ResponseEntity<Map<String, Object>> getStats() {
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("total", contactFormService.getAllContactForms().size());
+        stats.put("new", contactFormService.getContactFormsCountByStatus("NEW"));
+        stats.put("inProgress", contactFormService.getContactFormsCountByStatus("IN_PROGRESS"));
+        stats.put("resolved", contactFormService.getContactFormsCountByStatus("RESOLVED"));
+        return ResponseEntity.ok(stats);
+    }
+}
