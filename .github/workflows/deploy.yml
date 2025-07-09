@@ -38,10 +38,10 @@ jobs:
         username: ubuntu
         key: ${{ secrets.EC2_KEY }}
         script: |
-          echo "🔁 Killing old Spring Boot process if running"
+          sudo "🔁 Killing old Spring Boot process if running"
           pkill -f 'myapp.jar' || echo "No running instance found"
 
-          echo "🚀 Starting new backend"
+          sudo "🚀 Starting new backend"
           nohup java -jar /home/ubuntu/wecanvoiceforwomenbackend/myapp.jar > /home/ubuntu/wecanvoiceforwomenbackend/backend.log 2>&1 &
 
-          echo "✅ Spring Boot backend restarted"
+          sudo "✅ Spring Boot backend restarted"
