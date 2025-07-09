@@ -11,7 +11,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/contact")
-@CrossOrigin(origins = {"http://16.171.19.4", "https://wecanvoiceforwomen.org"})
+@CrossOrigin(origins = {"https://wecanvoiceforwomen.org"})
 public class ContactFormController {
 
     @Autowired
