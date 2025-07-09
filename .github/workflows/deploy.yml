@@ -1,27 +1,27 @@
 name: Deploy Spring Boot to EC2
- 
+
 on:
   push:
     branches:
       - main
- 
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
- 
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
- 
+
     - name: Set up Java
       uses: actions/setup-java@v3
       with:
         distribution: 'temurin'
         java-version: '17'
- 
+
     - name: Build JAR file
       run: mvn clean package -DskipTests
- 
+
     - name: Upload JAR to EC2
       uses: appleboy/scp-action@master
       with:
@@ -30,7 +30,7 @@ jobs:
         key: ${{ secrets.EC2_KEY }}
         source: target/womens-foundation-backend-0.0.1-SNAPSHOT.jar
         target: /home/ubuntu/wecanvoiceforwomenbackend/
- 
+
     - name: SSH and restart backend on EC2
       uses: appleboy/ssh-action@master
       with:
