@@ -29,7 +29,7 @@ jobs:
         username: ubuntu
         key: ${{ secrets.EC2_SSH_KEY }}
         source: target/womens-foundation-backend-0.0.1-SNAPSHOT.jar
-        target: /home/ubuntu/wecanvoiceforwomenbackend/
+        target: /home/ubuntu/wecanvoiceforwomenbackend/app.jar
 
     - name: SSH and restart backend on EC2
       uses: appleboy/ssh-action@master
@@ -38,6 +38,7 @@ jobs:
         username: ubuntu
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          pkill -f 'womens-foundation-backend' || true
-          nohup java -jar /home/ubuntu/wecanvoiceforwomenbackend/womens-foundation-backend-0.0.1-SNAPSHOT.jar > backend.log 2>&1 &
-          echo "✅ Spring Boot backend restarted successfully"
+          echo "🔁 Restarting backend..."
+          pkill -f 'app.jar' || echo "No running backend found"
+          nohup java -jar /home/ubuntu/wecanvoiceforwomenbackend/app.jar > /home/ubuntu/wecanvoiceforwomenbackend/backend.log 2>&1 &
+          echo "✅ Backend restarted"
