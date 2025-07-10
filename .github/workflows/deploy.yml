@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 🛒 Checkout code
+      - name: ✅ Checkout Code
         uses: actions/checkout@v3
 
       - name: ☕ Set up Java
@@ -18,13 +18,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: 🔨 Build Spring Boot App
+      - name: 🏗️ Build Spring Boot App
         run: mvn clean package -DskipTests
 
-      - name: 📦 List built files
+      - name: 📁 List built JAR
         run: ls -la target
 
-      - name: 📤 Upload JAR to EC2
+      - name: 🚀 Upload JAR to EC2
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -34,7 +34,7 @@ jobs:
           source: "target/*.jar"
           target: "/home/ubuntu/"
 
-      - name: 🚀 SSH into EC2 and Restart Spring Boot
+      - name: 🧠 Rename & Restart app on EC2
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -42,14 +42,15 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           port: 22
           script: |
-            echo "🔁 Finding latest JAR file..."
-            LATEST_JAR=$(ls -t /home/ubuntu/*.jar | head -n 1)
-            echo "Latest JAR: $LATEST_JAR"
-
-            echo "📁 Moving to myapp.jar"
+            echo "🔁 Renaming JAR to myapp.jar"
+            LATEST_JAR=$(ls /home/ubuntu/*.jar | grep -v myapp.jar | head -n 1)
             mv "$LATEST_JAR" /home/ubuntu/myapp.jar
 
-            echo "♻️ Restarting Spring Boot service"
+            echo "🧹 Removing old log"
+            rm -f /home/ubuntu/app.log
+
+            echo "🚀 Restarting systemd service"
+            sudo systemctl daemon-reexec
             sudo systemctl restart myapp
 
-            echo "✅ Deployment completed successfully!"
+            echo "✅ Deployment Complete"
