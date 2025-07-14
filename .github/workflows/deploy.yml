@@ -2,8 +2,7 @@ name: 🚀 Deploy Spring Boot Backend to EC2
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]  # Trigger deployment on push to main branch
 
 jobs:
   deploy:
@@ -16,42 +15,42 @@ jobs:
       - name: ☕ Set up Java
         uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
           java-version: '17'
+          distribution: 'temurin'
 
       - name: 🏗️ Build Spring Boot App
-        working-directory: wecanvoiceforwomenbackend
         run: mvn clean package -DskipTests
 
-      - name: 📦 List JAR Files
-        run: ls -lah wecanvoiceforwomenbackend/target
+      - name: 📁 List built JAR
+        run: ls -lah target
 
-      - name: 🚀 Upload JAR to EC2 Instance
-        uses: appleboy/scp-action@master
+      - name: 🚀 Upload JAR to EC2
+        uses: appleboy/scp-action@v0.1.4
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           port: 22
-          source: "wecanvoiceforwomenbackend/target/*.jar"
+          source: "target/womens-foundation-backend-0.0.1-SNAPSHOT.jar"
           target: "/home/ubuntu/"
 
-      - name: 🔁 SSH to Restart Spring Boot on EC2
-        uses: appleboy/ssh-action@master
+      - name: 🧠 Rename & Restart Backend on EC2
+        uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           port: 22
           script: |
-            echo "🔁 Renaming latest JAR to myapp.jar"
-            JAR=$(ls /home/ubuntu/*.jar | grep -v myapp.jar | head -n 1)
-            mv "$JAR" /home/ubuntu/myapp.jar
+            echo "🔁 Renaming JAR to myapp.jar"
+            mv /home/ubuntu/womens-foundation-backend-0.0.1-SNAPSHOT.jar /home/ubuntu/myapp.jar
 
-            echo "🧹 Clean old log if exists"
-            rm -f /home/ubuntu/myapp.log
+            echo "🧹 Cleaning old logs"
+            rm -f /home/ubuntu/app.log
 
-            echo "🚀 Restart Spring Boot service"
+            echo "🚀 Restarting backend service"
             sudo systemctl daemon-reexec
+            sudo systemctl daemon-reload
             sudo systemctl restart myapp
-            sudo systemctl status myapp --no-pager
+
+            echo "✅ Spring Boot backend deployed!"
