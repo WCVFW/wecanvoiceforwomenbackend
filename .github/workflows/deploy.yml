@@ -31,7 +31,7 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           port: 22
-          source: "target/*.jar"
+          source: "wecanvoiceforwomenbackend/target/*.jar"
           target: "/home/ubuntu/"
 
       - name: 🧠 Rename & Restart Backend on EC2
