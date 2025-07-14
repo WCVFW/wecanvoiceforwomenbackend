@@ -12,7 +12,7 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/contact")
 @CrossOrigin(origins = {
-    "http://13.60.235.97/",
+    "https://wecanvoiceforwomen.org/",
     "http://localhost:5173" // optional for local testing
 })
 public class ContactFormController {
