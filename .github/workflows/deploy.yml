@@ -19,7 +19,7 @@ jobs:
           distribution: 'temurin'
 
       - name: 🏗️ Build Spring Boot App
-        run: ./mvnw clean package -DskipTests
+        run: ./mvn clean package -DskipTests
 
       - name: 📦 List JAR Files
         run: ls -lah target
