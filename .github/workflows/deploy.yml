@@ -1,16 +1,15 @@
-name: Deploy Spring Boot Backend to EC2
+name: Deploy Spring Boot to EC2
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: ✅ Checkout code
+      - name: ✅ Checkout Code
         uses: actions/checkout@v3
 
       - name: ☕ Set up Java
@@ -19,25 +18,23 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: 🏗️ Build Spring Boot JAR
-        working-directory: ./wecanvoiceforwomenbackend
-        run: mvn clean package -DskipTests
+      - name: 🏗️ Build Spring Boot App
+        run: ./mvnw clean package -DskipTests
 
-      - name: 📦 List JAR files
-        working-directory: ./wecanvoiceforwomenbackend/target
-        run: ls -lah
+      - name: 📦 List JAR Files
+        run: ls -lah target
 
-      - name: 📤 Copy JAR to EC2
+      - name: 🚀 Upload JAR to EC2 Instance
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           port: 22
-          source: "wecanvoiceforwomenbackend/target/*.jar"
+          source: "target/*.jar"
           target: "/home/ubuntu/"
 
-      - name: 🚀 Restart Spring Boot Service
+      - name: 🔁 Restart Spring Boot App on EC2
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -46,13 +43,13 @@ jobs:
           port: 22
           script: |
             echo "🔁 Renaming latest JAR to myapp.jar"
-            JAR=$(ls /home/ubuntu/*.jar | grep -v myapp.jar | head -n 1)
-            mv "$JAR" /home/ubuntu/myapp.jar
+            LATEST_JAR=$(ls /home/ubuntu/*.jar | grep -v myapp.jar | head -n 1)
+            mv "$LATEST_JAR" /home/ubuntu/myapp.jar
 
-            echo "🧹 Clean old log"
+            echo "🧹 Cleaning old log if exists"
             rm -f /home/ubuntu/myapp.log
 
-            echo "🔄 Restarting systemd service"
+            echo "🚀 Restarting systemd service"
             sudo systemctl daemon-reexec
             sudo systemctl restart myapp
             sudo systemctl status myapp --no-pager
