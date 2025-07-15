@@ -23,18 +23,15 @@ public class RazorpayController {
     @Autowired
     private RazorpayKeyRepository keyRepository;
 
-    // ✅ Get Razorpay Public Key
     @GetMapping("/key")
     public ResponseEntity<?> getKey() {
         RazorpayKey key = keyRepository.findTopByOrderByIdDesc();
         if (key == null || key.getRazorpayKeyId() == null) {
-            return ResponseEntity.status(500).body(Map.of("error", "Razorpay Key not found"));
+            return ResponseEntity.status(500).body(Map.of("error", "Razorpay Key not configured"));
         }
-
         return ResponseEntity.ok(Map.of("key", key.getRazorpayKeyId()));
     }
 
-    // ✅ Create Order
     @PostMapping("/create-order")
     public ResponseEntity<?> createOrder(@RequestBody Map<String, Integer> data) throws RazorpayException {
         int amount = data.get("amount");

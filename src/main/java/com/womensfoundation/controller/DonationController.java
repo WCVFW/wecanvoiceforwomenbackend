@@ -6,11 +6,11 @@ import com.womensfoundation.model.Donation;
 import com.womensfoundation.repository.DonationRepository;
 import com.womensfoundation.service.EmailService;
 import com.womensfoundation.service.RazorpayService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.security.SignatureException;
 import java.time.LocalDateTime;
@@ -33,7 +33,6 @@ public class DonationController {
     @Autowired
     private EmailService emailService;
 
-    // Create Razorpay Order
     @PostMapping("/create-order")
     public ResponseEntity<?> createOrder(@RequestBody Map<String, Integer> request) {
         Integer amount = request.get("amount");
@@ -55,12 +54,10 @@ public class DonationController {
         }
     }
 
-    // Verify Payment & Save Donation
     @PostMapping("/verify")
     public ResponseEntity<?> verifyPayment(@RequestBody Donation donation) {
-        logger.info("🔍 Received donation verification request: {}", donation);
+        logger.info("🔍 Verifying donation: {}", donation);
 
-        // Validate Razorpay fields
         if (donation.getRazorpayOrderId() == null ||
             donation.getRazorpayPaymentId() == null ||
             donation.getRazorpaySignature() == null) {
@@ -74,42 +71,19 @@ public class DonationController {
                     donation.getRazorpaySignature());
 
             if (!isValid) {
-                logger.warn("❌ Invalid Razorpay signature for order: {}", donation.getRazorpayOrderId());
+                logger.warn("❌ Invalid signature for Razorpay order {}", donation.getRazorpayOrderId());
                 return ResponseEntity.badRequest().body("Invalid payment signature.");
             }
 
-            // Validate essential donor info
-            if (donation.getName() == null || donation.getEmail() == null || donation.getAmount() == null) {
-                return ResponseEntity.badRequest().body("Missing donor information.");
-            }
-
-            // Generate receipt & save
             donation.setCreatedAt(LocalDateTime.now());
             String receiptId = "RCPT-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
             donation.setReceiptId(receiptId);
 
             Donation savedDonation = donationRepository.save(donation);
-            logger.info("✅ Donation saved: ID={}, Name={}, Amount={}", receiptId, savedDonation.getName(), savedDonation.getAmount());
 
-            // Send emails
-            try {
-                emailService.sendDonationReceiptToDonor(
-                        savedDonation.getEmail(),
-                        savedDonation.getName(),
-                        savedDonation.getAmount(),
-                        receiptId
-                );
-                emailService.sendDonationNotificationToAdmin(
-                        savedDonation.getName(),
-                        savedDonation.getEmail(),
-                        savedDonation.getAmount(),
-                        receiptId
-                );
-            } catch (Exception e) {
-                logger.error("❌ Error sending emails for donation {}", receiptId, e);
-            }
+            emailService.sendDonationReceiptToDonor(savedDonation.getEmail(), savedDonation.getName(), savedDonation.getAmount(), receiptId);
+            emailService.sendDonationNotificationToAdmin(savedDonation.getName(), savedDonation.getEmail(), savedDonation.getAmount(), receiptId);
 
-            // Send back full donation info
             return ResponseEntity.ok(Map.of(
                     "receiptId", receiptId,
                     "name", savedDonation.getName(),
@@ -119,11 +93,11 @@ public class DonationController {
             ));
 
         } catch (SignatureException e) {
-            logger.error("❌ SignatureException during verification", e);
-            return ResponseEntity.internalServerError().body("Error verifying signature.");
+            logger.error("❌ Signature verification failed", e);
+            return ResponseEntity.internalServerError().body("Error verifying payment.");
         } catch (Exception e) {
-            logger.error("❌ Unknown error verifying donation", e);
-            return ResponseEntity.internalServerError().body("Something went wrong. Please try again.");
+            logger.error("❌ Unexpected error during verification", e);
+            return ResponseEntity.internalServerError().body("Something went wrong.");
         }
     }
 }
