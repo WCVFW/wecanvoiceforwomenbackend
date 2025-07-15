@@ -19,7 +19,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/donations")
-@CrossOrigin(origins = "https://wecanvoiceforwomen.org", methods = {RequestMethod.POST}, allowCredentials = "true")
+@CrossOrigin(origins = "https://wecanvoiceforwomen.org")
 public class DonationController {
 
     private static final Logger logger = LoggerFactory.getLogger(DonationController.class);

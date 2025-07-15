@@ -14,7 +14,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/razorpay")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "https://wecanvoiceforwomen.org")
 public class RazorpayController {
 
     @Autowired
@@ -27,6 +27,10 @@ public class RazorpayController {
     @GetMapping("/key")
     public ResponseEntity<?> getKey() {
         RazorpayKey key = keyRepository.findTopByOrderByIdDesc();
+        if (key == null || key.getRazorpayKeyId() == null) {
+            return ResponseEntity.status(500).body(Map.of("error", "Razorpay Key not found"));
+        }
+
         return ResponseEntity.ok(Map.of("key", key.getRazorpayKeyId()));
     }
 

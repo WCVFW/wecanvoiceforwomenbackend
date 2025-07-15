@@ -1,4 +1,3 @@
-// === RazorpayKey.java ===
 package com.womensfoundation.model;
 
 import jakarta.persistence.*;
@@ -17,39 +16,13 @@ public class RazorpayKey {
     @Column(name = "key_secret")
     private String razorpayKeySecret;
 
-    // === Constructors ===
-    public RazorpayKey() {
-    }
+    // Getters & Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public RazorpayKey(Long id, String razorpayKeyId, String razorpayKeySecret) {
-        this.id = id;
-        this.razorpayKeyId = razorpayKeyId;
-        this.razorpayKeySecret = razorpayKeySecret;
-    }
+    public String getRazorpayKeyId() { return razorpayKeyId; }
+    public void setRazorpayKeyId(String razorpayKeyId) { this.razorpayKeyId = razorpayKeyId; }
 
-    // === Getters ===
-    public Long getId() {
-        return id;
-    }
-
-    public String getRazorpayKeyId() {
-        return razorpayKeyId;
-    }
-
-    public String getRazorpayKeySecret() {
-        return razorpayKeySecret;
-    }
-
-    // === Setters ===
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setRazorpayKeyId(String razorpayKeyId) {
-        this.razorpayKeyId = razorpayKeyId;
-    }
-
-    public void setRazorpayKeySecret(String razorpayKeySecret) {
-        this.razorpayKeySecret = razorpayKeySecret;
-    }
+    public String getRazorpayKeySecret() { return razorpayKeySecret; }
+    public void setRazorpayKeySecret(String razorpayKeySecret) { this.razorpayKeySecret = razorpayKeySecret; }
 }
