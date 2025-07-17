@@ -1,84 +1,66 @@
 package com.womensfoundation.controller;
 
-import com.womensfoundation.model.ContactForm;
-import com.womensfoundation.service.ContactFormService;
-import jakarta.validation.Valid;
+import com.womensfoundation.model.GetInvolved;
+import com.womensfoundation.repository.GetInvolvedRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.*;
+import java.io.IOException;
+import java.time.LocalDateTime;
 
 @RestController
-@RequestMapping("/api/contact")
-@CrossOrigin(origins = {
-    "https://wecanvoiceforwomen.org/",
-    "http://localhost:5173" // optional for local testing
-})
-public class ContactFormController {
+@RequestMapping("/api/get-involved")
+@CrossOrigin(origins = "https://wecanvoiceforwomen.org")
+public class GetInvolvedController {
 
     @Autowired
-    private ContactFormService contactFormService;
+    private GetInvolvedRepository getInvolvedRepository;
 
-    // Submit Contact Form
-    @PostMapping
-    public ResponseEntity<Map<String, Object>> submitContactForm(@Valid @RequestBody ContactForm contactForm) {
-        ContactForm saved = contactFormService.saveContactForm(contactForm);
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("message", "Contact form submitted successfully");
-        response.put("id", saved.getId());
-        return ResponseEntity.ok(response);
-    }
-
-    // Get All Contact Forms
-    @GetMapping
-    public ResponseEntity<List<ContactForm>> getAllContactForms() {
-        return ResponseEntity.ok(contactFormService.getAllContactForms());
-    }
-
-    // Get Contact Form by ID
-    @GetMapping("/{id}")
-    public ResponseEntity<ContactForm> getContactFormById(@PathVariable Long id) {
-        return contactFormService.getContactFormById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    // Get Contact Forms by Status
-    @GetMapping("/status/{status}")
-    public ResponseEntity<List<ContactForm>> getContactFormsByStatus(@PathVariable String status) {
-        return ResponseEntity.ok(contactFormService.getContactFormsByStatus(status));
-    }
-
-    // Update Contact Form Status
-    @PutMapping("/{id}/status")
-    public ResponseEntity<ContactForm> updateStatus(
-            @PathVariable Long id,
-            @RequestBody Map<String, String> body
+    @PostMapping("/submit")
+    public ResponseEntity<String> submitForm(
+            @RequestParam String firstName,
+            @RequestParam String lastName,
+            @RequestParam String email,
+            @RequestParam(required = false) String phone,
+            @RequestParam(required = false) String state,
+            @RequestParam(required = false) String aadhaarNumber,
+            @RequestParam String interest,
+            @RequestParam(required = false) String roleAppliedFor,
+            @RequestParam(required = false) String partnerType,
+            @RequestParam(required = false) MultipartFile cvFile,
+            @RequestParam(required = false) MultipartFile imageFile,
+            @RequestParam(required = false) MultipartFile aadhaarFile
     ) {
-        String status = body.get("status");
-        return ResponseEntity.ok(contactFormService.updateContactFormStatus(id, status));
-    }
+        try {
+            GetInvolved gi = new GetInvolved();
+            gi.setFirstName(firstName);
+            gi.setLastName(lastName);
+            gi.setEmail(email);
+            gi.setPhone(phone);
+            gi.setState(state);
+            gi.setAadhaarNumber(aadhaarNumber);
+            gi.setInterest(interest);
+            gi.setRoleAppliedFor(roleAppliedFor);
+            gi.setPartnerType(partnerType);
+            gi.setCreatedAt(LocalDateTime.now());
 
-    // Delete Contact Form
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> deleteForm(@PathVariable Long id) {
-        contactFormService.deleteContactForm(id);
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("message", "Deleted successfully");
-        return ResponseEntity.ok(response);
-    }
+            if (cvFile != null && !cvFile.isEmpty()) {
+                gi.setCvFile(cvFile.getBytes());
+            }
+            if (imageFile != null && !imageFile.isEmpty()) {
+                gi.setImageFile(imageFile.getBytes());
+            }
+            if (aadhaarFile != null && !aadhaarFile.isEmpty()) {
+                gi.setAadhaarFile(aadhaarFile.getBytes());
+            }
 
-    // Get Contact Form Statistics
-    @GetMapping("/stats")
-    public ResponseEntity<Map<String, Object>> getStats() {
-        Map<String, Object> stats = new HashMap<>();
-        stats.put("total", contactFormService.getAllContactForms().size());
-        stats.put("new", contactFormService.getContactFormsCountByStatus("NEW"));
-        stats.put("inProgress", contactFormService.getContactFormsCountByStatus("IN_PROGRESS"));
-        stats.put("resolved", contactFormService.getContactFormsCountByStatus("RESOLVED"));
-        return ResponseEntity.ok(stats);
+            getInvolvedRepository.save(gi);
+
+            return ResponseEntity.ok("Get Involved form submitted successfully!");
+        } catch (IOException e) {
+            return ResponseEntity.badRequest().body("File upload error: " + e.getMessage());
+        }
     }
 }
