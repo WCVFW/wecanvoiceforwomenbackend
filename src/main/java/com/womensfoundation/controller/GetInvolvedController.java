@@ -10,7 +10,10 @@ import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/get-involved")
-@CrossOrigin(origins = "https://wecanvoiceforwomen.org")
+@CrossOrigin(origins = {
+    "https://wecanvoiceforwomen.org/",
+    "http://localhost:5173" // optional for local testing
+})
 public class GetInvolvedController {
 
     @Autowired
