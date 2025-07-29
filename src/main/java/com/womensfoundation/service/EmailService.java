@@ -126,50 +126,86 @@ public class EmailService {
 
         // 5. Notify admin about Get Involved form
         public void sendGetInvolvedFormToAdmin(GetInvolved data) {
-                try {
-                        MimeMessage message = mailSender.createMimeMessage();
-                        MimeMessageHelper helper = new MimeMessageHelper(message, true); // true = multipart
+    try {
+        MimeMessage adminMessage = mailSender.createMimeMessage();
+        MimeMessageHelper adminHelper = new MimeMessageHelper(adminMessage, true); // true = multipart
 
-                        helper.setTo(ADMIN_EMAIL);
-                        helper.setSubject("📥 New Get Involved Submission");
+        adminHelper.setTo(ADMIN_EMAIL);
+        adminHelper.setSubject("📥 New Get Involved Submission");
 
-                        StringBuilder body = new StringBuilder();
-                        body.append("New Get Involved Form Submission:\n\n")
-                                        .append("Name: ").append(data.getFirstName()).append(" ")
-                                        .append(data.getLastName()).append("\n")
-                                        .append("Email: ").append(data.getEmail()).append("\n")
-                                        .append("Phone: ").append(data.getPhone()).append("\n")
-                                        .append("State: ").append(data.getState()).append("\n")
-                                        .append("Aadhaar Number: ").append(data.getAadhaarNumber()).append("\n")
-                                        .append("Interest: ").append(data.getInterest()).append("\n");
+        StringBuilder body = new StringBuilder();
+        body.append("New Get Involved Form Submission:\n\n")
+            .append("Name: ").append(data.getFirstName()).append(" ")
+            .append(data.getLastName()).append("\n")
+            .append("Email: ").append(data.getEmail()).append("\n")
+            .append("Phone: ").append(data.getPhone()).append("\n")
+            .append("State: ").append(data.getState()).append("\n")
+            .append("Aadhaar Number: ").append(data.getAadhaarNumber()).append("\n")
+            .append("Interest: ").append(data.getInterest()).append("\n");
 
-                        if (data.getRoleAppliedFor() != null)
-                                body.append("Role Applied For: ").append(data.getRoleAppliedFor()).append("\n");
-                        if (data.getPartnerType() != null)
-                                body.append("Partner Type: ").append(data.getPartnerType()).append("\n");
+        if (data.getRoleAppliedFor() != null)
+            body.append("Role Applied For: ").append(data.getRoleAppliedFor()).append("\n");
+        if (data.getPartnerType() != null)
+            body.append("Partner Type: ").append(data.getPartnerType()).append("\n");
 
-                        helper.setText(body.toString());
+        adminHelper.setText(body.toString());
 
-                        // Attach files if present
-                        if (data.getCvFile() != null) {
-                                helper.addAttachment("CV_" + data.getFirstName() + ".pdf",
-                                                new ByteArrayResource(data.getCvFile()));
-                        }
-
-                        if (data.getImageFile() != null) {
-                                helper.addAttachment("Photo_" + data.getFirstName() + ".jpg",
-                                                new ByteArrayResource(data.getImageFile()));
-                        }
-
-                        if (data.getAadhaarFile() != null) {
-                                helper.addAttachment("Aadhaar_" + data.getFirstName() + ".pdf",
-                                                new ByteArrayResource(data.getAadhaarFile()));
-                        }
-
-                        mailSender.send(message);
-
-                } catch (MessagingException e) {
-                        System.err.println("❌ Error sending Get Involved email: " + e.getMessage());
-                }
+        // Attach files if present
+        if (data.getCvFile() != null) {
+            adminHelper.addAttachment("CV_" + data.getFirstName() + ".pdf",
+                new ByteArrayResource(data.getCvFile()));
         }
+
+        if (data.getImageFile() != null) {
+            adminHelper.addAttachment("Photo_" + data.getFirstName() + ".jpg",
+                new ByteArrayResource(data.getImageFile()));
+        }
+
+        if (data.getAadhaarFile() != null) {
+            adminHelper.addAttachment("Aadhaar_" + data.getFirstName() + ".pdf",
+                new ByteArrayResource(data.getAadhaarFile()));
+        }
+
+        mailSender.send(adminMessage);
+
+        // Now send confirmation to the user
+        sendConfirmationEmailToUser(data);
+
+    } catch (MessagingException e) {
+        System.err.println("❌ Error sending Get Involved email: " + e.getMessage());
+    }
+}
+
+private void sendConfirmationEmailToUser(GetInvolved data) {
+    try {
+        MimeMessage userMessage = mailSender.createMimeMessage();
+        MimeMessageHelper userHelper = new MimeMessageHelper(userMessage, false); // no attachment
+
+        userHelper.setTo(data.getEmail());
+        userHelper.setSubject("✅ Thank you for getting involved!");
+
+        String message = String.format(
+            "Dear %s %s,\n\n"
+            + "Thank you for your interest in getting involved with We Can Voice for Women Foundation. "
+            + "We have received your submission and our team will review it shortly.\n\n"
+            + "Here’s a quick summary:\n"
+            + "Interest: %s\n"
+            + (data.getRoleAppliedFor() != null ? "Role Applied For: " + data.getRoleAppliedFor() + "\n" : "")
+            + (data.getPartnerType() != null ? "Partner Type: " + data.getPartnerType() + "\n" : "")
+            + "\nIf you have any questions, feel free to reply to this email.\n\n"
+            + "Warm regards,\nThe We Can Voice for Women Team",
+            data.getFirstName(),
+            data.getLastName(),
+            data.getInterest()
+        );
+
+        userHelper.setText(message);
+
+        mailSender.send(userMessage);
+
+    } catch (MessagingException e) {
+        System.err.println("❌ Error sending confirmation email to user: " + e.getMessage());
+    }
+}
+
 }
