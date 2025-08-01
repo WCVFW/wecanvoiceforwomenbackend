@@ -20,6 +20,8 @@ public class GetInvolved {
     private String interest;
     private String roleAppliedFor;
     private String partnerType;
+    private String organizationName;
+    private String location;
 
     @Lob
     @Column(name = "cv_file", columnDefinition = "LONGBLOB")
@@ -147,5 +149,21 @@ public class GetInvolved {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getOrganizationName() {
+        return organizationName;
+    }
+
+    public void setOrganizationName(String organizationName) {
+        this.organizationName = organizationName;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
     }
 }
