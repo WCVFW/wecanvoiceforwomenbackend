@@ -21,7 +21,7 @@ public class GetInvolved {
     private String roleAppliedFor;
     private String partnerType;
     private String organizationName;
-    private String location;
+    private String organizationLocation;
 
     @Lob
     @Column(name = "cv_file", columnDefinition = "LONGBLOB")
@@ -159,11 +159,11 @@ public class GetInvolved {
         this.organizationName = organizationName;
     }
 
-    public String getLocation() {
-        return location;
+    public String getOrganizationLocation() {
+        return organizationLocation;
     }
 
-    public void setLocation(String location) {
-        this.location = location;
+    public void setOrganizationLocation(String organizationLocation) {
+        this.organizationLocation = organizationLocation;
     }
 }
