@@ -32,6 +32,7 @@ public class GetInvolvedController {
             @RequestParam(required = false) String roleAppliedFor,
             @RequestParam(required = false) String partnerType,
             @RequestParam(required = false) String organizationName,
+            @RequestParam(required = false) String organizationLocation, // ✅ Added location
             @RequestParam(required = false) MultipartFile cv,
             @RequestParam(required = false) MultipartFile image,
             @RequestParam(required = false) MultipartFile aadhaar
@@ -48,6 +49,7 @@ public class GetInvolvedController {
             data.setRoleAppliedFor(roleAppliedFor);
             data.setPartnerType(partnerType);
             data.setOrganizationName(organizationName);
+            data.setOrganizationLocation(organizationLocation); // ✅ Set location
 
             if (cv != null && !cv.isEmpty()) {
                 data.setCvFile(cv.getBytes());
